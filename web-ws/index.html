@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <button onclick="close()">断开连接</button>
+    <input type="text" id="ipt">
+    <button onclick="sendMsg()">发送消息</button>
+    <div>收到的消息</div>
+    <div id="list"></div>
+</body>
+<script>
+    let isConnect = false
+    const list = document.querySelector('#list')
+    const ipt = document.querySelector('#ipt')
+    function sendMsg() {
+        send(ipt.value, 301)
+    }
+    // 建立连接
+    const ws = new WebSocket('ws://localhost:8081/ws')
+    ws.addEventListener('open', () => {
+        sendHeart()
+    })
+    // 收到消息
+    ws.addEventListener('message', e => {
+        const data = JSON.parse(e.data)
+        if (data.code === 200) {
+            const div = document.createElement('div')
+            div.innerText = data.msg
+            list.append(div)
+        }
+    })
+    // 发送消息
+    function send(msg, code) {
+        ws.send(JSON.stringify({ msg, code }))
+    }
+    // 断开连接
+    function close() {
+        ws.close()
+    }
+    // 心跳
+    function sendHeart() {
+        setInterval(() => {
+            send('心跳连接', 300)
+        }, 20000)
+    }
+</script>
+
+</html>
